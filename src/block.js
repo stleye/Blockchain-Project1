@@ -42,13 +42,11 @@ class Block {
      *     or Reject with an error.
      */
     getBData() {
-        let decodedData = hex2ascii(this.body);
-        let javascriptObj = Block(JSON.parse(decodedData));
-        if (javascriptObj.previousBlockHash != null) {
-            return javascriptObj.body;
-        } else {
-            throw "Genesis Block";
+        if (this.height == 0) { 
+            return null;
         }
+        let decodedData = hex2ascii(this.body);
+        return JSON.parse(JSON.parse(decodedData)); //why 2??
 
         // Getting the encoded data saved in the Block
         // Decoding the data to retrieve the JSON representation of the object
