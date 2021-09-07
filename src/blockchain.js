@@ -120,7 +120,8 @@ class Blockchain {
                 reject("Time is not less than 5 minutes");
             } else {
                 if (bitcoinMessage.verify(message, address, signature)) {
-                    let block = new BlockClass.Block(star);
+                    let data = JSON.stringify({ "owner": address, "star": star });
+                    let block = new BlockClass.Block(data);
                     self._addBlock(block);
                     resolve(block);
                 } else {
@@ -175,7 +176,8 @@ class Blockchain {
         let self = this;
         let stars = [];
         return new Promise((resolve, reject) => {
-            //self.chain.filter(b => b.address)
+            stars = self.chain.map(b => b.getBData()).filter(p => p != null && p.owner === address);
+            resolve(stars);
         });
     }
 
