@@ -15,7 +15,7 @@ const hex2ascii = require('hex2ascii');
 class Block {
 
     // Constructor - argument data will be the object containing the transaction data
-	constructor(data){
+	constructor(data) {
 		this.hash = null;                                           // Hash of the block
 		this.height = 0;                                            // Block Height (consecutive number of each block)
 		this.body = Buffer.from(JSON.stringify(data)).toString('hex');   // Will contain the transactions stored in the block, by default it will encode the data
@@ -26,8 +26,8 @@ class Block {
     validate() {
         let self = this;
         return new Promise((resolve, reject) => {
-            let auxiliary = self.hash; 
-            this.hash = SHA256(JSON.stringify(self.hash)).toString();
+            let auxiliary = self.hash;
+            this.hash = SHA256(JSON.stringify(self)).toString();
             resolve(auxiliary == self.hash);
         });
     }
@@ -42,6 +42,14 @@ class Block {
      *     or Reject with an error.
      */
     getBData() {
+        let decodedData = hex2ascii(this.body);
+        let javascriptObj = Block(JSON.parse(decodedData));
+        if (javascriptObj.previousBlockHash != null) {
+            return javascriptObj.body;
+        } else {
+            throw "Genesis Block";
+        }
+
         // Getting the encoded data saved in the Block
         // Decoding the data to retrieve the JSON representation of the object
         // Parse the data to an object to be retrieve.
