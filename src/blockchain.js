@@ -61,22 +61,19 @@ class Blockchain {
      * Note: the symbol `_` in the method name indicates in the javascript convention 
      * that this method is a private method. 
      */
-    _addBlock(block) {
+    _addBlock(newBlock) {
         let self = this;
         return new Promise(async (resolve, reject) => {
-            block.height = this.chain.length;
-            block.time = new Date().getTime().toString().slice(0,-3);
             if (this.chain.length>0) {
-                block.previousBlockHash = this._getLatestBlock().hash;
+                newBlock.previousBlockHash = this.chain[this.chain.length-1].hash;
             }
-            block.hash = SHA256(JSON.stringify(block)).toString();
-            this.chain.push(block);
-            resolve(self);
+            newBlock.height = this.chain.length;
+            newBlock.time = new Date().getTime().toString().slice(0,-3);
+            newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
+            this.chain.push(newBlock);
+            this.height = this.height + 1;
+            resolve(newBlock);
         });
-    }
-
-    _getLatestBlock() {
-        return this.chain[this.chain.length -1];
     }
 
     /**
@@ -117,7 +114,7 @@ class Blockchain {
             let messageTime = parseInt(message.split(':')[1]);
             let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
             if (Math.abs(currentTime - messageTime) > 5 * 60) {
-                reject("Time is not less than 5 minutes");
+                reject(Error("Time is not less than 5 minutes"));
             } else {
                 if (bitcoinMessage.verify(message, address, signature)) {
                     let data = JSON.stringify({ "owner": address, "star": star });
@@ -125,7 +122,7 @@ class Blockchain {
                     self._addBlock(block);
                     resolve(block);
                 } else {
-                    reject("message does not verify");
+                    reject(Error("Message does not verify"));
                 }
             }
         });
@@ -191,7 +188,16 @@ class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
-            
+            for(let index=0; index<self.chain.length; index++) {
+                if (index > 0) {
+                    if (self.chain[index].previousBlockHash != self.chain[index-1].hash) {
+                        errorLog.push(Error("Invalid hash"));
+                    } else {
+                        self.chain[index].validate().then(result => errorLog.push(result));
+                    }
+                }
+            }
+            resolve(errorLog);
         });
     }
 
