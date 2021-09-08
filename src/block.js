@@ -27,8 +27,8 @@ class Block {
         let self = this;
         return new Promise((resolve, reject) => {
             let auxiliary = self.hash;
-            this.hash = SHA256(JSON.stringify(self)).toString();
-            resolve(auxiliary == self.hash);
+            let recalculated = SHA256(JSON.stringify(self)).toString();
+            resolve(auxiliary === recalculated);
         });
     }
 
